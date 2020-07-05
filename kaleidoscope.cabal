@@ -1,0 +1,61 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 444ea38b4ee1adb9cf06e557d0d7338838bcff2b0cb157dbeb96ba1e35cdff1d
+
+name:           kaleidoscope
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/sudo-rushil/kaleidoscope#readme>
+homepage:       https://github.com/sudo-rushil/kaleidoscope#readme
+bug-reports:    https://github.com/sudo-rushil/kaleidoscope/issues
+author:         Rushil Mallarapu
+maintainer:     rushil.mallarapu@gmail.com
+copyright:      Rushil Mallarapu
+license:        MIT
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/sudo-rushil/kaleidoscope
+
+library
+  exposed-modules:
+      Main
+  other-modules:
+      Paths_kaleidoscope
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers >=0.4
+    , haskeline >=0.7.1
+    , llvm-hs >=9.0
+    , llvm-hs-pure >=9.0
+    , mtl >=2.2
+    , parsec >=3.1
+    , transformers >=0.3 && <0.6
+  default-language: Haskell2010
+
+executable kaleidoscope
+  main-is: Main.hs
+  other-modules:
+      Paths_kaleidoscope
+  hs-source-dirs:
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers >=0.4
+    , haskeline >=0.7.1
+    , kaleidoscope
+    , llvm-hs >=9.0
+    , llvm-hs-pure >=9.0
+    , mtl >=2.2
+    , parsec >=3.1
+    , transformers >=0.3 && <0.6
+  default-language: Haskell2010
