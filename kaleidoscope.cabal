@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 444ea38b4ee1adb9cf06e557d0d7338838bcff2b0cb157dbeb96ba1e35cdff1d
+-- hash: 5848ac0d53c20d20849a0a272a6b06b8d62e50cc5a229e42f3125b3054652aac
 
 name:           kaleidoscope
 version:        0.1.0.0
@@ -25,7 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Lexer
       Main
+      Parser
+      Syntax
   other-modules:
       Paths_kaleidoscope
   hs-source-dirs:
@@ -44,6 +47,9 @@ library
 executable kaleidoscope
   main-is: Main.hs
   other-modules:
+      Lexer
+      Parser
+      Syntax
       Paths_kaleidoscope
   hs-source-dirs:
       src
