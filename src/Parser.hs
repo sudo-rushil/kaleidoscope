@@ -23,6 +23,10 @@ table =
         [ binary "+" Plus Ex.AssocLeft
         , binary "-" Minus Ex.AssocLeft
         ]
+    ,
+        [ binary "=" Equal Ex.AssocLeft
+        , binary "<" LT Ex.AssocLeft
+        ]
     ]
 
 

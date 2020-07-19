@@ -12,6 +12,7 @@ import qualified LLVM.AST.FloatingPointPredicate as FP
 
 import           Control.Applicative
 import           Control.Monad.Except
+import           Data.ByteString.Short
 import           Data.Int
 import qualified Data.Map                        as Map
 import           Data.Word
@@ -19,7 +20,7 @@ import           Data.Word
 import           Codegen
 import qualified Syntax                          as S
 
-toSig :: [String] -> [(AST.Type, AST.Name)]
+toSig :: [ShortByteString] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
 codegenTop :: S.Expr -> LLVM ()
@@ -58,22 +59,20 @@ lt a b = do
   uitofp double test
 
 binops = Map.fromList [
-      ("+", fadd)
-    , ("-", fsub)
-    , ("*", fmul)
-    , ("/", fdiv)
-    , ("<", lt)
+      (S.Plus, fadd)
+    , (S.Minus, fsub)
+    , (S.Times, fmul)
+    , (S.Divide, fdiv)
+    , (S.Less, lt)
   ]
 
 cgen :: S.Expr -> Codegen AST.Operand
-cgen (S.UnaryOp op a) = do
-  cgen $ S.Call ("unary" ++ op) [a]
-cgen (S.BinaryOp "=" (S.Var var) val) = do
+cgen (S.BinOp S.Equal (S.Var var) val) = do
   a <- getvar var
   cval <- cgen val
   store a cval
   return cval
-cgen (S.BinaryOp op a b) = do
+cgen (S.BinOp op a b) = do
   case Map.lookup op binops of
     Just f  -> do
       ca <- cgen a

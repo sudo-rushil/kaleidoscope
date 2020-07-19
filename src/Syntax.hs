@@ -19,4 +19,6 @@ data Op = Plus
     | Minus
     | Times
     | Divide
+    | Equal
+    | Less
     deriving (Eq, Ord, Show)
