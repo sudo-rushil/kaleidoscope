@@ -26,9 +26,6 @@ import           LLVM.AST.Type
 import           LLVM.AST.Typed                  (typeOf)
 
 
--- Copy and undeerstand code from llvm-hs-kaleidoscope/src/Codegen.hs
--- Module Level
-
 newtype LLVM a = LLVM (State AST.Module a)
   deriving (Functor, Applicative, Monad, MonadState AST.Module)
 
