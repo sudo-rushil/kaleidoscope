@@ -103,11 +103,6 @@ fnPtr nm = findType <$> gets moduleDefinitions
 double :: Type
 double = FloatingPointType DoubleFP
 
-
-void :: Type
-void = AST.VoidType
-
-
 -- Names
 
 type Names = Map.Map ShortByteString Int

@@ -25,7 +25,7 @@ table =
         ]
     ,
         [ binary "=" Equal Ex.AssocLeft
-        , binary "<" LT Ex.AssocLeft
+        , binary "<" Less Ex.AssocLeft
         ]
     ]
 
