@@ -15,6 +15,8 @@ data Expr = Float Double
     | Call Name [Expr]
     | Function Name [Expr] Expr
     | Extern Name [Expr]
+    | If Expr Expr Expr
+    | For Name Expr Expr Expr Expr
     deriving (Eq, Ord, Show)
 
 
@@ -24,6 +26,8 @@ data SExpr = SFloat Double
     | SCall String [SExpr]
     | SFunction String [SExpr] SExpr
     | SExtern String [SExpr]
+    | SIf SExpr SExpr SExpr
+    | SFor String SExpr SExpr SExpr SExpr
     deriving (Eq, Ord, Show)
 
 

@@ -28,6 +28,7 @@ process modo source = do
   case res of
     Left err -> print err >> return Nothing
     Right ex -> do
+      -- print ex
       ast <- codegen modo ex
       rc <- runJIT ast
       return $ Just ast

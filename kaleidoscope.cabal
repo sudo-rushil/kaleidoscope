@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9233fa1e7cfca8a3dfc00702663ada4123d1d9198bfa59a1b77322446d1256c6
+-- hash: 8420306245556d1e7636e1332ca91e13852e6c13c3c7c8bb24bd661fbcc7a7ff
 
 name:           kaleidoscope
 version:        0.1.0.0
@@ -35,6 +35,8 @@ library
       Paths_kaleidoscope
   hs-source-dirs:
       src
+  c-sources:
+      src/cbits.c
   build-depends:
       base >=4.7 && <5
     , bytestring >=0.10

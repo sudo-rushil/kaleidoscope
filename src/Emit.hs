@@ -25,6 +25,12 @@ import           Codegen
 import qualified Syntax                          as S
 
 
+one = cons $ C.Float (F.Double 1.0)
+zero = cons $ C.Float (F.Double 0.0)
+false = zero
+true = one
+
+
 toSig :: [S.Expr] -> [(AST.Type, AST.Name)]
 toSig = map (\(S.Var x) -> (double, AST.Name x))
 
@@ -85,6 +91,51 @@ cgen (S.Call fn args) = do
     where
         fnargs = map (const double) args
         fnty = fnType fnargs
+cgen (S.If cond tr fl) = do
+    ifthen <- addBlock "if.then"
+    ifelse <- addBlock "if.else"
+    ifexit <- addBlock "if.exit"
+
+    cond <- cgen cond
+    test <- fcmp FP.ONE false cond
+    cbr test ifthen ifelse
+
+    setBlock ifthen
+    trval <- cgen tr
+    br ifexit
+    ifthen <- getBlock
+
+    setBlock ifelse
+    flval <- cgen fl
+    br ifexit
+    ifelse <- getBlock
+
+    setBlock ifexit
+    phi double [(trval, ifthen), (flval, ifelse)]
+cgen (S.For ivar start cond step body) = do
+    forloop <- addBlock "for.loop"
+    forexit <- addBlock "for.exit"
+
+    i <- alloca double
+    istart <- cgen start
+    stepval <- cgen step
+
+    store i istart
+    assign ivar i
+    br forloop
+
+    setBlock forloop
+    cgen body
+    ival <- load i
+    inext <- fadd ival stepval
+    store i inext
+
+    cond <- cgen cond
+    test <- fcmp FP.ONE false cond
+    cbr test forloop forexit
+
+    setBlock forexit
+    return zero
 
 
 -- Compilation

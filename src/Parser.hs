@@ -64,13 +64,41 @@ call :: Parser SExpr
 call = SCall <$> identifier <*> (parens $ commaSep expr)
 
 
+ifthen :: Parser SExpr
+ifthen = do
+    reserved "if"
+    cond <- expr
+    reserved "then"
+    tr <- expr
+    reserved "else"
+    fl <- expr
+    return $ SIf cond tr fl
+
+
+for :: Parser SExpr
+for = do
+    reserved "for"
+    var <- identifier
+    reservedOp "="
+    start <- expr
+    reservedOp ","
+    cond <- expr
+    reservedOp ","
+    step <- expr
+    reserved "in"
+    body <- expr
+    return $ SFor var start cond step body
+
+
 factor :: Parser SExpr
 factor = try floating
     <|> try int
     <|> try extern
     <|> try function
     <|> try call
-    <|> variable
+    <|> try variable
+    <|> for
+    <|> ifthen
     <|> parens expr
 
 
@@ -120,3 +148,5 @@ convert (SVar str)           = Var (fromString str)
 convert (SCall str sxps)    = Call (fromString str) (map convert sxps)
 convert (SFunction str sxps sxp) = Function (fromString str) (map convert sxps) (convert sxp)
 convert (SExtern str sxps) = Extern (fromString str) (map convert sxps)
+convert (SIf sxp sxp' sxp'') = If (convert sxp) (convert sxp') (convert sxp'')
+convert (SFor str sxp sxp' sxp'' sxp''') = For (fromString str) (convert sxp) (convert sxp') (convert sxp'') (convert sxp''')

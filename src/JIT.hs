@@ -49,7 +49,7 @@ runJIT mod = do
                 withPassManager passes $ \pm -> do
                     -- Optimization Pass
                     verify m
-                    runPassManager pm m
+                    -- runPassManager pm m
                     optmod <- moduleAST m
                     s <- moduleLLVMAssembly m
 
