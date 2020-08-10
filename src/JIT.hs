@@ -9,6 +9,7 @@ import qualified Data.ByteString.Char8 as ByteString
 import           Data.Int
 import           Data.Word
 import           Foreign.Ptr           (FunPtr, castFunPtr)
+
 import           LLVM.Analysis
 import qualified LLVM.AST              as AST
 import           LLVM.CodeModel
@@ -21,6 +22,7 @@ import           LLVM.Transforms
 
 
 foreign import ccall "dynamic" haskFun :: FunPtr (IO Double) -> (IO Double)
+
 
 run :: FunPtr a -> IO Double
 run fn = haskFun (castFunPtr fn :: FunPtr (IO Double))
@@ -41,21 +43,26 @@ passes = defaultCuratedPassSetSpec {optLevel = Just 3}
 
 runJIT :: AST.Module -> IO AST.Module
 runJIT mod = do
-  withContext $ \context ->
-    jit context $ \executionEngine ->
-      withModuleFromAST context mod $ \m ->
-        withPassManager passes $ \pm -> do
-          -- Optimization Pass
-          -- runPassManager pm m
-          optmod <- moduleAST m
-          s <- moduleLLVMAssembly m
-          ByteString.putStrLn s
-          EE.withModuleInEngine executionEngine m $ \ee -> do
-            mainfn <- EE.getFunction ee "main"
-            case mainfn of
-              Just fn -> do
-                res <- run fn
-                putStrLn $ "Evaluated to: " ++ show res
-              Nothing -> return ()
-          -- Return the optimized module
-          return optmod
+    withContext $ \context ->
+        jit context $ \executionEngine ->
+            withModuleFromAST context mod $ \m ->
+                withPassManager passes $ \pm -> do
+                    -- Optimization Pass
+                    verify m
+                    runPassManager pm m
+                    optmod <- moduleAST m
+                    s <- moduleLLVMAssembly m
+
+                    ByteString.putStrLn s
+
+                    EE.withModuleInEngine executionEngine m $ \ee -> do
+                        mainfn <- EE.getFunction ee "main"
+
+                        case mainfn of
+                          Just fn -> do
+                            res <- run fn
+                            putStrLn $ "Evaluated to: " ++ show res
+                          Nothing -> return ()
+
+                    -- Return the optimized module
+                    return optmod

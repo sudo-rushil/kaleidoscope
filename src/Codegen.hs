@@ -7,12 +7,14 @@ module Codegen where
 
 import           Control.Applicative
 import           Control.Monad.State
+
 import           Data.ByteString.Short
 import           Data.Function
 import           Data.List
 import qualified Data.Map                        as Map
 import           Data.String
 import           Data.Word
+
 import           LLVM.AST
 import qualified LLVM.AST                        as AST
 import           LLVM.AST.AddrSpace
@@ -40,8 +42,8 @@ emptyModule label = defaultModule { moduleName = label }
 
 addDefn :: Definition -> LLVM ()
 addDefn d = do
-        defs <- gets moduleDefinitions
-        modify $ \s -> s { moduleDefinitions = defs ++ [d] }
+    defs <- gets moduleDefinitions
+    modify $ \s -> s { moduleDefinitions = defs ++ [d] }
 
 
 define :: Type -> ShortByteString -> [(Type, Name)] -> (Type -> Codegen a) -> LLVM ()
@@ -99,6 +101,10 @@ fnPtr nm = findType <$> gets moduleDefinitions
 
 double :: Type
 double = FloatingPointType DoubleFP
+
+
+fnType :: [Type] -> Type
+fnType fnargs = PointerType (FunctionType (FloatingPointType DoubleFP) fnargs False) (AddrSpace 0)
 
 -- Names
 
@@ -175,33 +181,33 @@ execCodegen m = execState (runCodegen m) emptyCodegen
 
 fresh :: Codegen Word
 fresh = do
-        i <- gets count
-        modify $ \s -> s { count = 1 + i }
-        return (i + 1)
+    i <- gets count
+    modify $ \s -> s { count = 1 + i }
+    return (i + 1)
 
 
 instr :: Type -> Instruction -> Codegen (Operand)
 instr ty ins = do
-        n <- fresh
-        blk <- current
-        let ref = (UnName n)
-            i = stack blk
-        modifyBlock (blk { stack = (ref := ins) : i })
-        return $ local ty ref
+    n <- fresh
+    blk <- current
+    let ref = (UnName n)
+        i = stack blk
+    modifyBlock (blk { stack = (ref := ins) : i })
+    return $ local ty ref
 
 
 unnminstr :: Instruction -> Codegen ()
 unnminstr ins = do
-        blk <- current
-        let i = stack blk
-        modifyBlock (blk {stack = (Do ins) : i})
+    blk <- current
+    let i = stack blk
+    modifyBlock (blk {stack = (Do ins) : i})
 
 
 terminator :: Named Terminator -> Codegen (Named Terminator)
 terminator trm = do
-        blk <- current
-        modifyBlock (blk { term = Just trm })
-        return trm
+    blk <- current
+    modifyBlock (blk { term = Just trm })
+    return trm
 
 
 -- Block Stack
@@ -212,18 +218,18 @@ entry = gets currentBlock
 
 addBlock :: ShortByteString -> Codegen Name
 addBlock bname = do
-        bls <- gets blocks
-        ix <- gets blockCount
-        nms <- gets names
-        let new = emptyBlock ix
-            (qname, supply) = uniqueName bname nms
-        modify $ \s ->
-            s
-                { blocks = Map.insert (Name qname) new bls
-                , blockCount = ix + 1
-                , names = supply
-                }
-        return (Name qname)
+    bls <- gets blocks
+    ix <- gets blockCount
+    nms <- gets names
+    let new = emptyBlock ix
+        (qname, supply) = uniqueName bname nms
+    modify $ \s ->
+        s
+            { blocks = Map.insert (Name qname) new bls
+            , blockCount = ix + 1
+            , names = supply
+            }
+    return (Name qname)
 
 
 setBlock :: Name -> Codegen Name

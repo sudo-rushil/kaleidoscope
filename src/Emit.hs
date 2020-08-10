@@ -81,11 +81,10 @@ cgen (S.Var x) = getvar x >>= load
 cgen (S.Float n) = return $ cons $ C.Float (F.Double n)
 cgen (S.Call fn args) = do
     largs <- mapM cgen args
-    call (externf ptrType (AST.Name fn)) largs
+    call (externf fnty (AST.Name fn)) largs
     where
-        fnargs = map fst (toSig args)
-        fnPtrType = AST.FunctionType double fnargs False
-        ptrType = AST.PointerType fnPtrType (A.AddrSpace 0)
+        fnargs = map (const double) args
+        fnty = fnType fnargs
 
 
 -- Compilation
@@ -95,11 +94,7 @@ liftError = runExceptT >=> either fail return
 
 
 codegen :: AST.Module -> [S.Expr] -> IO AST.Module
-codegen mod fns = withContext $ \context ->
-  withModuleFromAST context newast $ \m -> do
-    llstr <- moduleLLVMAssembly m
-    -- B.putStrLn llstr
-    return newast
-  where
-    modn    = mapM codegenTop fns
-    newast  = runLLVM mod modn
+codegen mod fns = return newast
+    where
+        modn    = mapM codegenTop fns
+        newast  = runLLVM mod modn

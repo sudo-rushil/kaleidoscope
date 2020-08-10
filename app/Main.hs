@@ -3,10 +3,11 @@
 
 module Main where
 
-import           Codegen
-import           Emit
-import           JIT
-import           Parser
+
+import           Codegen                  (emptyModule)
+import           Emit                     (codegen)
+import           JIT                      (runJIT)
+import           Parser                   (parseTopLevel)
 
 import           Control.Monad.Trans
 
