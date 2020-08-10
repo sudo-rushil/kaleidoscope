@@ -1,14 +1,15 @@
 module Syntax where
 
 
+import           Data.ByteString.Short
 -- Type Definitions
 
-type Name = String
+type Name = ShortByteString
 
 
 data Expr = Float Double
     | BinOp Op Expr Expr
-    | Var String
+    | Var ShortByteString
     | Call Name [Expr]
     | Function Name [Expr] Expr
     | Extern Name [Expr]

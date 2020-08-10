@@ -23,33 +23,31 @@ import           Codegen
 import qualified Syntax                          as S
 
 
-toSig :: [ShortByteString] -> [(AST.Type, AST.Name)]
-toSig = map (\x -> (double, AST.Name x))
+toSig :: [S.Expr] -> [(AST.Type, AST.Name)]
+toSig = map (\(S.Var x) -> (double, AST.Name x))
 
 
 codegenTop :: S.Expr -> LLVM ()
 codegenTop (S.Function name args body) = do
-    define double name fnargs bls
+    define double name fnargs (\typ -> bls)
     where
         fnargs = toSig args
-        bls = createBlocks $ execCodegen $ do
-            entry <- addBlock entryBlockName
-            setBlock entry
-            forM args $ \a -> do
+        bls = do
+            forM args $ \(S.Var a) -> do
                 var <- alloca double
-                store var (local (AST.Name a))
+                store var (local double (AST.Name a))
                 assign a var
-                cgen body >>= ret
+            cgen body >>= ret
 codegenTop (S.Extern name args) = do
     external double name fnargs
     where fnargs = toSig args
 codegenTop exp = do
-    define double "main" [] blks
-    where
-        blks = createBlocks $ execCodegen $ do
-            entry <- addBlock entryBlockName
-            setBlock entry
-            cgen exp >>= ret
+    define double "main" [] (\typ -> cgen exp)
+    -- where
+    --     blks = createBlocks $ execCodegen $ do
+    --         entry <- addBlock entryBlockName
+    --         setBlock entry
+    --         cgen exp >>= ret
 
 -------------------------------------------------------------------------------
 -- Operations
@@ -60,6 +58,7 @@ lt a b = do
   test <- fcmp FP.ULT a b
   uitofp double test
 
+
 binops = Map.fromList [
       (S.Plus, fadd)
     , (S.Minus, fsub)
@@ -68,9 +67,10 @@ binops = Map.fromList [
     , (S.Less, lt)
   ]
 
+
 cgen :: S.Expr -> Codegen AST.Operand
 cgen (S.BinOp S.Equal (S.Var var) val) = do
-    a <- getvar (pack var)
+    a <- getvar var
     cval <- cgen val
     store a cval
     return cval
@@ -81,11 +81,12 @@ cgen (S.BinOp op a b) = do
             cb <- cgen b
             f ca cb
         Nothing -> error "No such operator"
-cgen (S.Var x) = getvar (pack x) >>= load
+cgen (S.Var x) = getvar x >>= load
 cgen (S.Float n) = return $ cons $ C.Float (F.Double n)
 cgen (S.Call fn args) = do
     largs <- mapM cgen args
-    call (externf (AST.Name (pack fn))) largs
+    call (externf double (AST.Name fn)) largs
+
 
 -------------------------------------------------------------------------------
 -- Compilation
@@ -97,9 +98,9 @@ liftError = runExceptT >=> either fail return
 
 codegen :: AST.Module -> [S.Expr] -> IO AST.Module
 codegen mod fns = withContext $ \context ->
-  liftError $ withModuleFromAST context newast $ \m -> do
+  withModuleFromAST context newast $ \m -> do
     llstr <- moduleLLVMAssembly m
-    putStrLn (unpack llstr)
+    print llstr
     return newast
   where
     modn    = mapM codegenTop fns
